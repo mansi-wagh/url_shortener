@@ -1,0 +1,576 @@
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shortly - URL Shortener</title>
+
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --surface: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --border: #dfe3ea;
+      --accent: #234b8b;
+      --accent-hover: #193b70;
+      --danger: #c0394b;
+      --ok: #16804a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 0 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    .topbar {
+      max-width: 1100px;
+      margin: 0 auto;
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      font-size: 1.45rem;
+      font-weight: 750;
+      letter-spacing: -0.7px;
+      color: var(--text);
+    }
+
+    .brand span { color: var(--accent); }
+
+    .main {
+      width: 100%;
+      max-width: 660px;
+      margin: 76px auto 40px;
+    }
+
+    .heading {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      letter-spacing: -1.2px;
+      line-height: 1.2;
+      font-weight: 750;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 30px;
+      box-shadow: 0 8px 26px rgba(20, 35, 60, 0.045);
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 9px;
+      font-size: 0.92rem;
+      font-weight: 650;
+      color: #303b4e;
+    }
+
+    input[type="url"] {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      font: inherit;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid #cbd2de;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    input[type="url"]::placeholder,
+    .alias input::placeholder {
+      color: #98a1b1;
+    }
+
+    input[type="url"]:focus,
+    .alias:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(35, 75, 139, .10);
+    }
+
+    .alias {
+      display: flex;
+      align-items: stretch;
+      min-height: 48px;
+      border: 1px solid #cbd2de;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    .alias span {
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      background: #f3f5f8;
+      border-right: 1px solid var(--border);
+      color: #667085;
+      font-size: .88rem;
+      white-space: nowrap;
+    }
+
+    .alias input {
+      flex: 1;
+      width: 100%;
+      min-width: 0;
+      padding: 12px;
+      border: 0;
+      outline: none;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .hint {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: .83rem;
+      line-height: 1.5;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .chips input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .chips label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 15px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: #475467;
+      font-size: .9rem;
+      cursor: pointer;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+
+    .chips label:hover {
+      border-color: #aab6c9;
+      color: var(--text);
+    }
+
+    .chips input:checked + label {
+      color: var(--accent);
+      background: #eef4ff;
+      border-color: #9db7e4;
+      font-weight: 650;
+    }
+
+    .chips input:focus-visible + label {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .submit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      width: 100%;
+      min-height: 49px;
+      padding: 13px 18px;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+      transition: background .15s, transform .15s;
+    }
+
+    .submit:hover {
+      background: var(--accent-hover);
+    }
+
+    .submit:active { transform: translateY(1px); }
+
+    .submit:disabled {
+      opacity: .65;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+
+    .submit:disabled .spinner { display: block; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    #error {
+      margin: 14px 0 0;
+      color: var(--danger);
+      font-size: .9rem;
+      overflow-wrap: anywhere;
+    }
+
+    #result {
+      margin-top: 24px;
+      padding: 20px;
+      border: 1px solid #b8dfc8;
+      border-radius: 10px;
+      background: #f1faf4;
+    }
+
+    #result[hidden] { display: none; }
+
+    #result .title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      color: var(--ok);
+      font-size: .95rem;
+      font-weight: 700;
+    }
+
+    #result .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #short {
+      flex: 1;
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid #d6e4da;
+      border-radius: 7px;
+      background: #fff;
+      color: var(--text);
+      font-size: .95rem;
+      font-weight: 600;
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+
+    #short:hover { color: var(--accent); }
+
+    #copy {
+      flex-shrink: 0;
+      padding: 11px 16px;
+      border: 1px solid #c7d0dc;
+      border-radius: 7px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: .88rem;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    #copy:hover { background: #f4f6f9; }
+
+    #copy.done {
+      color: var(--ok);
+      border-color: #a6d5b7;
+      background: #e5f5eb;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: .83rem;
+    }
+
+    .meta strong {
+      color: #344054;
+      font-weight: 650;
+    }
+
+    footer {
+      padding: 0 0 28px;
+      text-align: center;
+      color: var(--muted);
+      font-size: .83rem;
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 0 14px; }
+
+      .topbar { min-height: 65px; }
+
+      .main { margin-top: 44px; }
+
+      .card { padding: 21px 17px; }
+
+      .heading { margin-bottom: 24px; }
+
+      .alias span {
+        padding: 0 8px;
+        font-size: .76rem;
+      }
+
+      .alias input { padding: 10px 8px; }
+
+      .chips { gap: 8px; }
+
+      .chips label { padding: 9px 11px; }
+
+      #result { padding: 15px; }
+
+      #result .row { align-items: stretch; }
+
+      #short { font-size: .86rem; }
+
+      #copy { padding: 10px; }
+
+      .meta { gap: 8px 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">Shortly<span>.</span></div>
+  </header>
+
+  <main class="main">
+    <div class="heading">
+      <h1>Make long links short.</h1>
+      <p class="sub">
+        Paste a URL, choose an optional custom word, set an expiry,
+        and get a short link instantly.
+      </p>
+    </div>
+
+    <section class="card">
+      <form id="form">
+        <div>
+          <label class="label" for="url">Long URL</label>
+          <input
+            type="url"
+            id="url"
+            required
+            placeholder="https://example.com/your-long-link"
+            autocomplete="url"
+          >
+        </div>
+
+        <div>
+          <label class="label" for="alias">Custom word (optional)</label>
+          <div class="alias">
+            <span id="prefix"></span>
+            <input
+              type="text"
+              id="alias"
+              maxlength="30"
+              placeholder="my-link"
+              autocomplete="off"
+              pattern="[A-Za-z0-9_-]{3,30}"
+              title="3-30 letters, numbers, hyphens or underscores"
+            >
+          </div>
+          <p class="hint">
+            Leave empty and we'll generate a random code for you.
+          </p>
+        </div>
+
+        <div>
+          <span class="label">Link expires after</span>
+          <div class="chips">
+            <input type="radio" name="expiry" id="e5" value="5">
+            <label for="e5">5 min</label>
+
+            <input type="radio" name="expiry" id="e30" value="30">
+            <label for="e30">30 min</label>
+
+            <input type="radio" name="expiry" id="e60" value="60" checked>
+            <label for="e60">1 hour</label>
+
+            <input type="radio" name="expiry" id="e360" value="360">
+            <label for="e360">6 hours</label>
+
+            <input type="radio" name="expiry" id="e1440" value="1440">
+            <label for="e1440">24 hours</label>
+          </div>
+        </div>
+
+        <button class="submit" id="submit" type="submit">
+          <span class="spinner"></span>
+          <span id="btnText">Shorten link</span>
+        </button>
+      </form>
+
+      <p id="error" role="alert"></p>
+
+      <div id="result" hidden>
+        <div class="title">
+          <svg width="17" height="17" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round"
+               aria-hidden="true">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          Your short link is ready
+        </div>
+
+        <div class="row">
+          <a id="short" target="_blank" rel="noopener noreferrer"></a>
+          <button id="copy" type="button">Copy</button>
+        </div>
+
+        <div class="meta">
+          <span>Expires <strong id="expires"></strong></span>
+          <span>Time left <strong id="left"></strong></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Simple links. Less clutter.</footer>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let timer;
+
+    $("prefix").textContent = location.host + "/shortly/";
+
+    function startCountdown(expiry) {
+      clearInterval(timer);
+
+      const tick = () => {
+        const s = Math.max(0, Math.floor((expiry - Date.now()) / 1000));
+        const h = Math.floor(s / 3600);
+        const m = Math.floor((s % 3600) / 60);
+        const sec = s % 60;
+
+        $("left").textContent = s === 0
+          ? "expired"
+          : (h ? h + "h " : "") +
+            String(m).padStart(2, "0") + "m " +
+            String(sec).padStart(2, "0") + "s";
+
+        if (s === 0) clearInterval(timer);
+      };
+
+      tick();
+      timer = setInterval(tick, 1000);
+    }
+
+    $("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      $("error").textContent = "";
+      $("result").hidden = true;
+      $("submit").disabled = true;
+      $("btnText").textContent = "Shortening...";
+
+      try {
+        const res = await fetch("/shorten", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: $("url").value,
+            alias: $("alias").value.trim(),
+            expiry_minutes: Number(
+              document.querySelector(
+                "input[name=expiry]:checked"
+              ).value
+            ),
+          }),
+        });
+
+        if (!res.ok) {
+          const message = (await res.text()).trim();
+          throw new Error(message || "Unable to shorten this URL.");
+        }
+
+        const data = await res.json();
+        const expiry = new Date(data.expiry_date);
+
+        $("short").href = data.short_url;
+        $("short").textContent = data.short_url;
+        $("expires").textContent = expiry.toLocaleString();
+        $("copy").textContent = "Copy";
+        $("copy").classList.remove("done");
+        $("result").hidden = false;
+
+        startCountdown(expiry.getTime());
+      } catch (err) {
+        $("error").textContent =
+          err.message || "Something went wrong. Please try again.";
+      } finally {
+        $("submit").disabled = false;
+        $("btnText").textContent = "Shorten link";
+      }
+    });
+
+    $("copy").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText($("short").textContent);
+        $("copy").textContent = "Copied!";
+        $("copy").classList.add("done");
+      } catch {
+        $("error").textContent =
+          "Could not copy automatically. Please copy the link manually.";
+      }
+    });
+  </script>
+</body>
+</html>
